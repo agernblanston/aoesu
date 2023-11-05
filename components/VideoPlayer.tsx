@@ -2,8 +2,26 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 
-const VideoPlayer = ({ src, width = '640', height = '360', onInteraction, videoRef}) => {
+export type Coord = [number, number];
+interface Rect {
+    lo: Coord;
+    hi: Coord;
+}
+
+type VideoPlayerProps = {
+    src: string;
+    width?: string;
+    height?: string;
+    onClick: (coord: Coord) => void;
+    onDrag: (coord: Rect) => void;
+    // TODO modifiers
+    onKeypress: (key: string) => void;
+    videoRef: React.RefObject<HTMLVideoElement>;
+};
+
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, width = '640', height = '360', onClick, onDrag, onKeypress, videoRef }) => {
     const [mouseDownTime, setMouseDownTime] = useState(0);
+    const [mouseDownCoord, setMouseDownCoord] = useState([-1, -1]);
 
     useEffect(() => {
         if (videoRef.current) {
@@ -21,16 +39,17 @@ const VideoPlayer = ({ src, width = '640', height = '360', onInteraction, videoR
             // Invert the Y coordinate, so 0 is at the bottom
             const yPercent = 1 - ((event.clientY - rect.top) / rect.height);
 
-            const eperc=   { x: xPercent, y: yPercent };
+            const eperc = [xPercent, yPercent] as Coord;
             // console.log(`${event.type},${eperc.x},${eperc.y},${videoRef.current.currentTime}`);
             if (event.type === 'mousedown') {
                 setMouseDownTime(Date.now());
+                setMouseDownCoord(eperc);
             } else {
                 const timeElapsed = Date.now() - mouseDownTime;
                 if (timeElapsed < 200) {
-                    onInteraction('click',eperc);
+                    onClick(eperc);
                 } else {
-                    onInteraction('drag',eperc);
+                    onDrag({ lo: [Math.min(eperc[0]), Math.min(mouseDownCoord[0])], hi: [Math.max(eperc[1]), Math.max(mouseDownCoord[1])] });
                 }
                 setMouseDownTime(0);
             }
@@ -41,7 +60,7 @@ const VideoPlayer = ({ src, width = '640', height = '360', onInteraction, videoR
     const handleKeyPress = (event: React.KeyboardEvent) => {
         // You can access the key pressed with event.key
         // console.log(`Key pressed: ${event.key}`);
-        onInteraction('keypress', { key: event.key });
+        onKeypress(event.key);
     };
 
     return (
