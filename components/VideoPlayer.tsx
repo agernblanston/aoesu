@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
-const VideoPlayer = ({ src, width = '640', height = '360', onInteraction }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
+const VideoPlayer = ({ src, width = '640', height = '360', onInteraction, videoRef}) => {
+    const [mouseDownTime, setMouseDownTime] = useState(0);
 
     useEffect(() => {
         if (videoRef.current) {
@@ -22,16 +22,26 @@ const VideoPlayer = ({ src, width = '640', height = '360', onInteraction }) => {
             const yPercent = 1 - ((event.clientY - rect.top) / rect.height);
 
             const eperc=   { x: xPercent, y: yPercent };
-            console.log(`${event.type},${eperc.x},${eperc.y},${videoRef.current.currentTime}`);
-            onInteraction('mouseClick',eperc);
+            // console.log(`${event.type},${eperc.x},${eperc.y},${videoRef.current.currentTime}`);
+            if (event.type === 'mousedown') {
+                setMouseDownTime(Date.now());
+            } else {
+                const timeElapsed = Date.now() - mouseDownTime;
+                if (timeElapsed < 200) {
+                    onInteraction('click',eperc);
+                } else {
+                    onInteraction('drag',eperc);
+                }
+                setMouseDownTime(0);
+            }
         }
     };
 
     // Function to handle keyboard events
     const handleKeyPress = (event: React.KeyboardEvent) => {
         // You can access the key pressed with event.key
-        console.log(`Key pressed: ${event.key}`);
-        onInteraction('keyPress', { key: event.key });
+        // console.log(`Key pressed: ${event.key}`);
+        onInteraction('keypress', { key: event.key });
     };
 
     return (
