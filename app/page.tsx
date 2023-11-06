@@ -40,6 +40,7 @@ export default function Home() {
   const [inputIdx, setInputIdx] = useState(0);
   const [keyPressIdx, setKeyPressIdx] = useState(0);
   const [points, setPoints] = useState<Coord[]>([]); // Define points state
+  const [text, setText] = useState("");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const updateInputIdx = (newInputIdx: number) => {
@@ -48,11 +49,14 @@ export default function Home() {
     if (req.type === 'click') {
       console.log("click", req.coord);
       setPoints([req.coord]);
+      setText("Click");
     } else if (req.type === 'drag') {
       console.log("drag", req.box.lo);
       setPoints([req.box.lo, req.box.hi]);
+      setText("Drag");
     } else {
       setPoints([]);
+      setText(`Hotkey: ${req.sequence.join(',')}`);
     }
   };
 
@@ -85,7 +89,7 @@ export default function Home() {
         }
       }} videoRef={videoRef}/>
       <VideoOverlay points={points} videoRef={videoRef}/>
-      <TextOverlay text="foo" />
+      <TextOverlay text={text} />
     </div>
   );
 }
