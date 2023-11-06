@@ -82,9 +82,11 @@ export default function Home() {
             if (keyPressIdx === req.sequence.length - 1) {
               setKeyPressIdx(0);
               updateInputIdx(inputIdx + 1);
+            } else {
+              setKeyPressIdx(keyPressIdx + 1);
             }
           } else {
-            updateInputIdx(inputIdx + 1);
+            setKeyPressIdx(0);
           }
         }
       }} videoRef={videoRef}/>
