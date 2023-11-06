@@ -72,6 +72,7 @@ export const requiredInputs: RequiredInput[] = [
     { id: "attack militia", type: "click", coord: [.402, .607] },
     { id: "select vils", type: "drag", box: { lo: [.457, .465], hi: [.503, .548] } },
     { id: "attack scout", type: "click", coord: [.449, .643] },
+    { id: "done.", type: "hotkey", sequence: ['1']},
 ];
 
 // mousedown,0.4160346695557963,0.5521849042975804,0.494351

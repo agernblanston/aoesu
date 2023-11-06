@@ -1,6 +1,6 @@
 // import YouTubeComponent from '../components/YouTubeComponent';
 "use client"
-import VideoPlayer from '../components/VideoPlayer';
+import VideoPlayer, {Coord} from '../components/VideoPlayer';
 import TextOverlay from '../components/TextOverlay';
 import VideoOverlay from '../components/VideoOverlay';
 
@@ -39,19 +39,37 @@ import ActionList, {Action, requiredInputs} from '../components/ActionList';
 export default function Home() {
   const [inputIdx, setInputIdx] = useState(0);
   const [keyPressIdx, setKeyPressIdx] = useState(0);
+  const [points, setPoints] = useState<Coord[]>([]); // Define points state
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const updateInputIdx = (newInputIdx: number) => {
+    setInputIdx(newInputIdx);
+    const req = requiredInputs[newInputIdx];
+    if (req.type === 'click') {
+      console.log("click", req.coord);
+      setPoints([req.coord]);
+    } else if (req.type === 'drag') {
+      console.log("drag", req.box.lo);
+      setPoints([req.box.lo, req.box.hi]);
+    } else {
+      setPoints([]);
+    }
+  };
+
+  useEffect(() => {
+    updateInputIdx(inputIdx);
+  }, []);
 
   return (
     <div>
       <h1>Welcome to the AOESU</h1>
       <VideoPlayer src="/viper_quickwall.webm" width="100%" onClick={(coord)=>{
         if (requiredInputs[inputIdx].type === "click") {
-          setInputIdx(inputIdx + 1);
+          updateInputIdx(inputIdx + 1);
         }
       }} onDrag={(rect)=>{
         if (requiredInputs[inputIdx].type === "drag") {
-          setInputIdx(inputIdx + 1);
+          updateInputIdx(inputIdx + 1);
         }
       }} onKeypress={(key)=>{
         const req = requiredInputs[inputIdx];
@@ -59,16 +77,15 @@ export default function Home() {
           if (req.sequence[keyPressIdx] === key) {
             if (keyPressIdx === req.sequence.length - 1) {
               setKeyPressIdx(0);
-              setInputIdx(inputIdx + 1);
+              updateInputIdx(inputIdx + 1);
             }
           } else {
-            setInputIdx(inputIdx + 1);
+            updateInputIdx(inputIdx + 1);
           }
         }
       }} videoRef={videoRef}/>
-      <VideoOverlay videoRef={videoRef}/>
+      <VideoOverlay points={points} videoRef={videoRef}/>
       <TextOverlay text="foo" />
-      {/* <iframe allow="autoplay" src="https://www.youtube.com/embed/143l4lIeaWc?t=0&autoplay=1&mute=1" title="Bug Week " height="278" data-ytbridge="vidSurrogate2"></iframe> */}
     </div>
   );
 }

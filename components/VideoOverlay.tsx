@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Coord } from './VideoPlayer';
 
 interface VideoOverlayProps {
     videoRef: React.RefObject<HTMLVideoElement>;
+    points?: Coord[];
 }
 
-const VideoOverlay: React.FC<VideoOverlayProps> = ({videoRef}) => {
+const VideoOverlay: React.FC<VideoOverlayProps> = ({videoRef, points = []}) => {
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0 });
 
   const updateVideoSize = useCallback(() => {
@@ -33,23 +35,25 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({videoRef}) => {
 
   return (
       <svg
-        style={{ position: 'absolute', top: 0, left: 0,     pointerEvents: 'none',     }}
+        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none'}}
         width={videoDimensions.width}
         height={videoDimensions.height}
         
       >
-        {/* Circle */}
+        {points.map((point, index) => (
         <circle
-          cx="100"
-          cy="75"
-          r="50"
+          key={index}
+          cx={videoDimensions.width * point[0]}
+          cy={videoDimensions.height * (1 - point[1])}
+          r="30" // Radius of the circle
           stroke="#00ff00"
           strokeWidth="2"
           fill="transparent"
-          onClick={() => handleShapeClick('circle')}
+          onClick={() => handleShapeClick(`circle-${index}`)}
         />
+      ))}
         {/* Rectangle */}
-        <rect
+        {/* <rect
           x="150"
           y="100"
           width="200"
@@ -58,15 +62,7 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({videoRef}) => {
           strokeWidth="2"
           fill="transparent"
           onClick={() => handleShapeClick('rectangle')}
-        />
-        {/* Polygon */}
-        <polygon
-          points="300,150 350,200 300,250 250,200"
-          stroke="#00ff00"
-          strokeWidth="2"
-          fill="transparent"
-          onClick={() => handleShapeClick('polygon')}
-        />
+        /> */}
       </svg>
   );
 };
