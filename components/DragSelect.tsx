@@ -20,8 +20,17 @@ const DragSelect: React.FC<DragSelectProps> = ({ rect, videoRef }) => {
   const endY = (1 - rect.hi[1]) * videoRect.height;
 
   // Calculate width and height based on start and end positions
-  const width = Math.abs(endX - startX);
-  const height = Math.abs(endY - startY);
+  let width = Math.abs(endX - startX);
+  let height = Math.abs(endY - startY);
+
+  // Ensure there is a minimal width and height so the rect is visible even if width or height is zero
+  const minWidthHeight = 1; // Minimum width and height of the rectangle
+  if (width === 0) {
+    width = minWidthHeight;
+  }
+  if (height === 0) {
+    height = minWidthHeight;
+  }
 
   // Calculate the top left position for the SVG rect
   const posX = Math.min(startX, endX);
@@ -43,7 +52,6 @@ const DragSelect: React.FC<DragSelectProps> = ({ rect, videoRef }) => {
         height={height}
         fill="none"
         stroke="white"
-        // strokeDasharray="4"
         strokeWidth="2"
       />
     </svg>
