@@ -1,5 +1,5 @@
 import React from 'react';
-import { Coord , Rect} from './VideoPlayer';
+import {Coord, Rect } from '../types/geometry';
 
 interface DragSelectProps {
   rect?: Rect;

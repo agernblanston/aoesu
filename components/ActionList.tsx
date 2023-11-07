@@ -1,21 +1,11 @@
 // components/ActionList.tsx
 'use client'
 import React from 'react';
+import {Coord, Rect } from '../types/geometry';
 
-export type Coord = [number, number];
 export type Entity = string;
 export type Hotkey = string;
 export type InputId = string;
-interface Rect {
-    lo: Coord;
-    hi: Coord;
-}
-interface Loop {
-    coords: Coord[];
-}
-interface Polygon {
-    loops: Loop[];
-}
 interface ClickInput {
     type: 'click';
     coord: Coord;

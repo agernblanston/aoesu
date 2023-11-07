@@ -1,11 +1,12 @@
 "use client";
-import VideoPlayer, { Coord } from '../components/VideoPlayer';
+import VideoPlayer from '../components/VideoPlayer';
 import TextOverlay from '../components/TextOverlay';
 import VideoOverlay from '../components/VideoOverlay';
 
 import React, { useRef, useEffect, useState } from 'react';
 import ActionList, { Action, requiredInputs } from '../components/ActionList';
 import DragSelect from '@/components/DragSelect';
+import {Coord } from '@/types/geometry';
 
 export default function Home() {
   const [inputIdx, setInputIdx] = useState(0);

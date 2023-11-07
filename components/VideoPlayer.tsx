@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-export type Coord = [number, number];
-export interface Rect {
-  lo: Coord;
-  hi: Coord;
-}
+import {Coord, Rect} from '../types/geometry';
 
 type VideoPlayerProps = {
   src: string;

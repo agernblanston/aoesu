@@ -9,7 +9,6 @@ interface TextOverlayProps {
 }
 
 const TextOverlay: React.FC<TextOverlayProps> = ({ text, videoRef, isSuccess }) => {
-  const [isVisible, setIsVisible] = useState(true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Position overlay and fade out effect
@@ -20,10 +19,6 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ text, videoRef, isSuccess }) 
       overlayRef.current.style.left = `${videoRect.left + (videoRect.width / 2)}px`; // Center horizontally
     }
   }, [text, videoRef]);
-
-  if (!isVisible) {
-    return null;
-  }
 
   // Inline styles for the text overlay
   const overlayStyle: React.CSSProperties = {
@@ -37,8 +32,7 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ text, videoRef, isSuccess }) 
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black background
     zIndex: 10, // Ensure it's above the video
     transition: 'opacity 0.5s ease-in-out', // Smooth transition for fading out
-    opacity: isVisible ? 1 : 0, // Fade effect
-    visibility: isVisible ? 'visible' : 'hidden', // Prevent interaction when not visible
+    display: text.length > 0 ? 'block' : 'none',
   };
 
   return (

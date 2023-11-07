@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Coord } from './VideoPlayer';
+import {Coord } from '../types/geometry';
 
 interface VideoOverlayProps {
     videoRef: React.RefObject<HTMLVideoElement>;
