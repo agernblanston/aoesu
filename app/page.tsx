@@ -12,7 +12,7 @@ export default function Home() {
   const [inputIdx, setInputIdx] = useState(0);
   const [keyPressIdx, setKeyPressIdx] = useState(0);
   const [points, setPoints] = useState<Coord[]>([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState("...");
   const [currentRect, setCurrentRect] = useState<{ lo: Coord, hi: Coord } | undefined>(undefined);
 
   const videoRef = useRef<HTMLVideoElement>(null);
