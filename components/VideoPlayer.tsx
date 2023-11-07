@@ -83,26 +83,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handleMouseMove = (event: React.MouseEvent) => {
     if (isMouseDown && mouseDownCoord) {
       const coord = getMousePosition(event);
-      const rect: Rect = {
-        lo: mouseDownCoord,
-        hi: coord,
-      };
-      onDrag(rect);
+      // Only call onDrag if we haven't fired a mouseUp or mouseLeave
+      if (isMouseDown) {
+        const rect: Rect = {
+          lo: mouseDownCoord,
+          hi: coord,
+        };
+        onDrag(rect);
+      }
     }
   };
 
-  // Function to calculate the nearest edge
-  const snapToNearestEdge = (coord: Coord): Coord => {
-    const rect = videoRef.current!.getBoundingClientRect();
-    const x = coord[0] < 0.5 ? 0 : 1; // Snap to left (0) or right (1) edge based on x position
-    const y = coord[1] < 0.5 ? 1 : 0; // Snap to top (1) or bottom (0) edge based on y position (inverted y-axis)
-    return [x, y];
-  };
-
-  // Handler for when the mouse leaves the component
   const handleMouseLeave = (event: React.MouseEvent) => {
     if (isMouseDown && mouseDownCoord) {
-      const edgeCoord = snapToNearestEdge(getMousePosition(event));
+      const coord = getMousePosition(event);
+      const edgeCoord: Coord = [
+        Math.min(Math.max(coord[0], 0), 1), // Ensure x is within [0, 1]
+        Math.min(Math.max(coord[1], 0), 1), // Ensure y is within [0, 1]
+      ];
       const rect: Rect = {
         lo: mouseDownCoord,
         hi: edgeCoord,
@@ -116,6 +114,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handleKeyPress = (event: React.KeyboardEvent) => {
     onKeypress(event.key);
   };
+
   return (
     <div
       tabIndex={0}
