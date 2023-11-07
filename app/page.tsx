@@ -1,48 +1,21 @@
-// import YouTubeComponent from '../components/YouTubeComponent';
-"use client"
-import VideoPlayer, {Coord} from '../components/VideoPlayer';
+"use client";
+import VideoPlayer, { Coord } from '../components/VideoPlayer';
 import TextOverlay from '../components/TextOverlay';
 import VideoOverlay from '../components/VideoOverlay';
 
-import React, { useRef, useEffect, useState} from 'react';
-import ActionList, {Action, requiredInputs} from '../components/ActionList';
-
-// const requiredActions = [
-  // Drag select 2 vills (second one is optional)
-  // hotkey - palisade
-  // Click create palisade
-  // Click attack militia
-  // Drag select 4 vills
-  // Click attack scout
-  // Drag select (or click) vill
-  // Click vill left + upward (to walk)
-  // Click vill to tc
-  // hotkey - palisade
-  // click create palisade
-  // drag select or click (buggy) vill
-  // click repair palisade -she bugs out
-  // drag select two vills
-  // click attack militia
-  // click (repairing) vill
-  // click walk left
-  // hotkey - palisade
-  // click palisade
-  // hotkey - palisade
-  // drag select or click ANY of 4 villagers 
-  // click palisade
-  // drag select ANY of 3 vills
-  // click repair palisade
-
-  // Add more required actions as needed
-// ];
+import React, { useRef, useEffect, useState } from 'react';
+import ActionList, { Action, requiredInputs } from '../components/ActionList';
+import DragSelect from '@/components/DragSelect';
 
 export default function Home() {
   const [inputIdx, setInputIdx] = useState(0);
   const [keyPressIdx, setKeyPressIdx] = useState(0);
-  const [points, setPoints] = useState<Coord[]>([]); // Define points state
+  const [points, setPoints] = useState<Coord[]>([]);
   const [text, setText] = useState("");
+  const [currentRect, setCurrentRect] = useState<{ lo: Coord, hi: Coord } | undefined>(undefined);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+
   const updateInputIdx = (newInputIdx: number) => {
     setInputIdx(newInputIdx);
     const req = requiredInputs[newInputIdx];
@@ -60,6 +33,18 @@ export default function Home() {
     }
   };
 
+  // Update this handler to set the current rectangle for the drag action
+  const onDrag = (rect: { lo: Coord, hi: Coord }) => {
+    setCurrentRect(rect);
+  };
+
+  const onDragEnd = (rect: { lo: Coord, hi: Coord }) => {
+    setCurrentRect(undefined);
+    if (requiredInputs[inputIdx].type === "drag") {
+      updateInputIdx(inputIdx + 1);
+    }
+  };
+
   useEffect(() => {
     updateInputIdx(inputIdx);
   }, []);
@@ -67,18 +52,19 @@ export default function Home() {
   return (
     <div>
       <h1>Welcome to the AOESU</h1>
-      <VideoPlayer src="/viper_quickwall.webm" width="100%" onClick={(coord)=>{
-        if (requiredInputs[inputIdx].type === "click") {
-          updateInputIdx(inputIdx + 1);
-        }
-      }} onDrag={(rect)=>{
-        if (requiredInputs[inputIdx].type === "drag") {
-          updateInputIdx(inputIdx + 1);
-        }
-      }} onKeypress={(key)=>{
-        const req = requiredInputs[inputIdx];
-        if (req.type === "hotkey") {
-          if (req.sequence[keyPressIdx] === key) {
+      <VideoPlayer
+        src="/viper_quickwall.webm"
+        width="100%"
+        onClick={(coord) => {
+          if (requiredInputs[inputIdx].type === "click") {
+            updateInputIdx(inputIdx + 1);
+          }
+        }}
+        onDrag={onDrag} // Pass the onDrag handler
+        onDragEnd={onDragEnd} // Pass the onDragEnd handler
+        onKeypress={(key) => {
+          const req = requiredInputs[inputIdx];
+          if (req.type === "hotkey" && req.sequence[keyPressIdx] === key) {
             if (keyPressIdx === req.sequence.length - 1) {
               setKeyPressIdx(0);
               updateInputIdx(inputIdx + 1);
@@ -88,10 +74,12 @@ export default function Home() {
           } else {
             setKeyPressIdx(0);
           }
-        }
-      }} videoRef={videoRef}/>
-      <VideoOverlay points={points} videoRef={videoRef}/>
+        }}
+        videoRef={videoRef}
+      />
+      <VideoOverlay points={points} videoRef={videoRef} />
       <TextOverlay text={text} />
+      <DragSelect rect={currentRect} videoRef={videoRef} />
     </div>
   );
 }

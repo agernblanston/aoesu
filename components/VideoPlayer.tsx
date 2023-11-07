@@ -1,90 +1,113 @@
-'use client';
-
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export type Coord = [number, number];
-interface Rect {
-    lo: Coord;
-    hi: Coord;
+export interface Rect {
+  lo: Coord;
+  hi: Coord;
 }
 
 type VideoPlayerProps = {
-    src: string;
-    width?: string;
-    height?: string;
-    onClick: (coord: Coord) => void;
-    onDrag: (coord: Rect) => void;
-    // TODO modifiers
-    onKeypress: (key: string) => void;
-    videoRef: React.RefObject<HTMLVideoElement>;
+  src: string;
+  width?: string;
+  height?: string;
+  onClick: (coord: Coord) => void;
+  onDrag: (rect: Rect) => void;
+  onDragEnd: (rect: Rect) => void;
+  onKeypress: (key: string) => void;
+  videoRef: React.RefObject<HTMLVideoElement>;
 };
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, width = '640', height = '360', onClick, onDrag, onKeypress, videoRef }) => {
-    const [mouseDownTime, setMouseDownTime] = useState(0);
-    const [mouseDownCoord, setMouseDownCoord] = useState([-1, -1]);
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  src,
+  width = '640',
+  height = '360',
+  onClick,
+  onDrag,
+  onDragEnd,
+  onKeypress,
+  videoRef,
+}) => {
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [mouseDownCoord, setMouseDownCoord] = useState<Coord | null>(null);
+  const [mouseDownTime, setMouseDownTime] = useState<number>(0); // Add this line to define mouseDownTime
 
-    useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.playbackRate = 0.1;
-        }
-    }, []);
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.1;
+    }
+  }, [videoRef]);
 
-    // Function to handle mouse click events
-    const handleMouseClick = (event: React.MouseEvent) => {
-        if (videoRef.current) {
-            const rect = videoRef.current.getBoundingClientRect();
+  const getMousePosition = (event: React.MouseEvent): Coord => {
+    const rect = videoRef.current!.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const y = 1 - (event.clientY - rect.top) / rect.height; // Invert y-axis
+    return [x, y];
+  };
 
-            // You can access the click coordinates with event.clientX and event.clientY
-            const xPercent = ((event.clientX - rect.left) / rect.width);
-            // Invert the Y coordinate, so 0 is at the bottom
-            const yPercent = 1 - ((event.clientY - rect.top) / rect.height);
+  const handleMouseDown = (event: React.MouseEvent) => {
+    setMouseDownTime(Date.now()); // Update the mouseDownTime here
+    const coord = getMousePosition(event);
+    setMouseDownCoord(coord);
+    setIsMouseDown(true);
+  };
 
-            const eperc = [xPercent, yPercent] as Coord;
-            // console.log(`${event.type},${eperc.x},${eperc.y},${videoRef.current.currentTime}`);
-            if (event.type === 'mousedown') {
-                setMouseDownTime(Date.now());
-                setMouseDownCoord(eperc);
-            } else {
-                const timeElapsed = Date.now() - mouseDownTime;
-                if (timeElapsed < 200) {
-                    onClick(eperc);
-                } else {
-                    onDrag({ lo: [Math.min(eperc[0]), Math.min(mouseDownCoord[0])], hi: [Math.max(eperc[1]), Math.max(mouseDownCoord[1])] });
-                }
-                setMouseDownTime(0);
-            }
-        }
-    };
+  const handleMouseUp = (event: React.MouseEvent) => {
+    if (isMouseDown && mouseDownCoord) {
+      const coord = getMousePosition(event);
+      const timeElapsed = Date.now() - mouseDownTime;
+      if (timeElapsed < 200) { // Use the mouseDownTime to calculate the click duration
+        onClick(coord);
+      } else {
+        const rect: Rect = {
+          lo: [Math.min(coord[0], mouseDownCoord[0]), Math.min(coord[1], mouseDownCoord[1])],
+          hi: [Math.max(coord[0], mouseDownCoord[0]), Math.max(coord[1], mouseDownCoord[1])],
+        };
+        onDragEnd(rect);
+      }
+    }
+    setIsMouseDown(false);
+    setMouseDownCoord(null);
+  };
 
-    // Function to handle keyboard events
-    const handleKeyPress = (event: React.KeyboardEvent) => {
-        // You can access the key pressed with event.key
-        // console.log(`Key pressed: ${event.key}`);
-        onKeypress(event.key);
-    };
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (isMouseDown && mouseDownCoord) {
+      const coord = getMousePosition(event);
+      const rect: Rect = {
+        lo: [Math.min(coord[0], mouseDownCoord[0]), Math.min(coord[1], mouseDownCoord[1])],
+        hi: [Math.max(coord[0], mouseDownCoord[0]), Math.max(coord[1], mouseDownCoord[1])],
+      };
+      onDrag(rect);
+    }
+  };
 
-    return (
-        <div
-            tabIndex={0} // tabIndex is needed to make the div focusable to listen to keyboard events
-            onKeyDown={handleKeyPress}
-            onMouseDown={handleMouseClick}
-            onMouseUp={handleMouseClick}
-            style={{ outline: 'none' }} // Removes the outline on focus
-        >
-            <video
-                ref={videoRef}
-                width={width}
-                height={height}
-                autoPlay
-                muted
-                loop
-                playsInline
-            >
-                <source src={src} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
-        </div>
-    );
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    onKeypress(event.key);
+  };
+
+  return (
+    <div
+      tabIndex={0}
+      onKeyDown={handleKeyPress}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      style={{ outline: 'none', width, height }}
+    >
+      <video
+        ref={videoRef}
+        width={width}
+        height={height}
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }}
+      >
+        <source src={src} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  );
 };
 
 export default VideoPlayer;
