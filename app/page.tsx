@@ -55,6 +55,7 @@ export default function Home() {
         src="/viper_quickwall.webm"
         width="100%"
         onClick={(coord) => {
+          setCurrentRect(undefined);
           if (requiredInputs[inputIdx].type === "click") {
             updateInputIdx(inputIdx + 1);
           }
