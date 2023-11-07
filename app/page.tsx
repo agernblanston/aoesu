@@ -22,18 +22,17 @@ export default function Home() {
     if (req.type === 'click') {
       console.log("click", req.coord);
       setPoints([req.coord]);
-      setText("Click");
+      setText(req.id ?? "click");
     } else if (req.type === 'drag') {
       console.log("drag", req.box.lo);
       setPoints([req.box.lo, req.box.hi]);
-      setText("Drag");
+      setText(req.id ?? "drag");
     } else {
       setPoints([]);
-      setText(`Hotkey: ${req.sequence.join(',')}`);
+      setText(`Hotkey: ${req.sequence.join(',')}` + (req.id ?? ''));
     }
   };
 
-  // Update this handler to set the current rectangle for the drag action
   const onDrag = (rect: { lo: Coord, hi: Coord }) => {
     setCurrentRect(rect);
   };
