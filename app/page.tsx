@@ -50,7 +50,6 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Welcome to the AOESU</h1>
       <VideoPlayer
         src="/viper_quickwall.webm"
         width="100%"
@@ -77,7 +76,7 @@ export default function Home() {
         videoRef={videoRef}
       />
       <VideoOverlay points={points} videoRef={videoRef} />
-      <TextOverlay text={text} />
+      <TextOverlay text={text} videoRef={videoRef} />
       <DragSelect rect={currentRect} videoRef={videoRef} />
     </div>
   );

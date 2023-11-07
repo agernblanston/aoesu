@@ -1,22 +1,25 @@
 'use client'
 // TextOverlay.tsx
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
 
 interface TextOverlayProps {
   text: string;
+  videoRef: React.RefObject<HTMLVideoElement>;
   isSuccess?: boolean; // Determines the color of the border (green for success, red for failure)
 }
 
-const TextOverlay: React.FC<TextOverlayProps> = ({ text, isSuccess }) => {
+const TextOverlay: React.FC<TextOverlayProps> = ({ text, videoRef, isSuccess }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Fade out effect
-  useEffect(() => {
-    // Set the text to fade out after 3 seconds
-    const timeout = setTimeout(() => setIsVisible(false), 3000);
-    return () => clearTimeout(timeout);
-  }, [text]);
+  // Position overlay and fade out effect
+  useLayoutEffect(() => {
+    if (videoRef.current && overlayRef.current) {
+      const videoRect = videoRef.current.getBoundingClientRect();
+      overlayRef.current.style.bottom = `${window.innerHeight - videoRect.bottom + 20}px`; // 20 pixels above the bottom of the video
+      overlayRef.current.style.left = `${videoRect.left + (videoRect.width / 2)}px`; // Center horizontally
+    }
+  }, [text, videoRef]);
 
   if (!isVisible) {
     return null;
@@ -24,23 +27,24 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ text, isSuccess }) => {
 
   // Inline styles for the text overlay
   const overlayStyle: React.CSSProperties = {
-    position: 'absolute',
-    bottom: '20px', // 20 pixels above the bottom of the video
-    left: '50%',
+    position: 'fixed', // 'fixed' to position relative to the viewport
     transform: 'translateX(-50%)',
     color: 'white',
     padding: '10px',
-    border: `2px solid ${isSuccess ? 'green' : 'red'}`,
+    border: `2px solid white`,
+    // border: `2px solid ${isSuccess ? 'green' : 'red'}`,
     borderRadius: '5px',
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black background
     zIndex: 10, // Ensure it's above the video
     transition: 'opacity 0.5s ease-in-out', // Smooth transition for fading out
     opacity: isVisible ? 1 : 0, // Fade effect
+    visibility: isVisible ? 'visible' : 'hidden', // Prevent interaction when not visible
   };
 
-  return ReactDOM.createPortal(
-    <div style={overlayStyle}>{text}</div>,
-    document.body // Render the component at the end of the body
+  return (
+    <div ref={overlayRef} style={overlayStyle}>
+      {text}
+    </div>
   );
 };
 
